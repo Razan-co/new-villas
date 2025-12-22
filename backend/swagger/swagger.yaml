@@ -1,0 +1,338 @@
+openapi: 3.0.3
+info:
+  title: Villas Auth API
+  version: 1.0.0
+  description: Villas Node.js + Express + MongoDB auth API using httpOnly cookie JWT.
+
+servers:
+  - url: http://localhost:5000
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: auth_token
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 665f9c2a1c2b4f0012abc123
+        name:
+          type: string
+          example: John Doe
+        email:
+          type: string
+          format: email
+          example: john@example.com
+        phone:
+          type: string
+          example: "9876543210"
+    MessageResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Operation successful
+    AuthUserResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Logged in successfully
+        data:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/User'
+
+paths:
+  /:
+    get:
+      summary: Health check
+      tags: [Health]
+      responses:
+        '200':
+          description: API is running
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: API is running
+
+  /api/auth/signup:
+    post:
+      summary: User signup
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, phone, password]
+              properties:
+                name:
+                  type: string
+                  example: John Doe
+                email:
+                  type: string
+                  format: email
+                  example: john@example.com
+                phone:
+                  type: string
+                  example: "9876543210"
+                password:
+                  type: string
+                  format: password
+                  example: Password123
+      responses:
+        '201':
+          description: User registered, JWT set in httpOnly cookie (1 day)
+          headers:
+            Set-Cookie:
+              description: |
+                auth_token httpOnly cookie with 1-day JWT.
+                Example: auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; HttpOnly; Path=/; Max-Age=86400; SameSite=Strict
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthUserResponse'
+        '400':
+          description: Validation or duplicate email error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /api/auth/login:
+    post:
+      summary: User login
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: john@example.com
+                password:
+                  type: string
+                  format: password
+                  example: Password123
+      responses:
+        '200':
+          description: Logged in, JWT set in httpOnly cookie (1 day)
+          headers:
+            Set-Cookie:
+              description: |
+                auth_token httpOnly cookie with 1-day JWT.
+                Example: auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; HttpOnly; Path=/; Max-Age=86400; SameSite=Strict
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthUserResponse'
+        '400':
+          description: Invalid credentials or validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /api/auth/forgot-password:
+    post:
+      summary: Generate password reset token
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: john@example.com
+      responses:
+        '200':
+          description: Reset token generated (returned only for dev/testing)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Password reset token generated
+                  data:
+                    type: object
+                    properties:
+                      resetToken:
+                        type: string
+                        example: 8f0c7f7f3c8b4f7f9b8c9d0e1f2a3b4c
+        '400':
+          description: User not found or validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /api/auth/reset-password:
+    post:
+      summary: Reset password with reset token
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, password]
+              properties:
+                token:
+                  type: string
+                  example: 8f0c7f7f3c8b4f7f9b8c9d0e1f2a3b4c
+                password:
+                  type: string
+                  format: password
+                  example: NewPassword123
+      responses:
+        '200':
+          description: Password reset successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Token invalid or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /api/auth/change-password:
+    post:
+      summary: Change password with old password
+      tags: [Auth]
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, oldPassword, newPassword]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: john@example.com
+                oldPassword:
+                  type: string
+                  format: password
+                  example: OldPassword123
+                newPassword:
+                  type: string
+                  format: password
+                  example: NewPassword123
+      responses:
+        '200':
+          description: Password changed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: User not found or old password incorrect
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          description: Not authenticated (missing/invalid cookie)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /api/auth/logout:
+    post:
+      summary: Logout and clear auth cookie
+      tags: [Auth]
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Logged out, cookie cleared
+          headers:
+            Set-Cookie:
+              description: Clears auth_token cookie.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
