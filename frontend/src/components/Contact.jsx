@@ -13,7 +13,7 @@ export default function Contact() {
         </h2>
 
         <p className="text-gray-300 leading-relaxed max-w-3xl ml-auto">
-        Nestled along the serene stretches of Yelagiri, Classy Villa embodies the art of quiet sophistication. Each villa harmoniously blends contemporary architecture with natural serenity — a sanctuary crafted for the discerning few who value space, style, and privacy above all
+        Nestled along the serene stretches of Yelagiri, Classy Villa embodies the art of quiet sophistication. Our villa harmoniously blends contemporary architecture with natural serenity — a sanctuary crafted for the discerning few who value space, style, and privacy above all
         </p>
       </div>
 
@@ -84,10 +84,17 @@ export default function Contact() {
 
      <div className="space-y-6 text-center mt-0 md:mt-40">
 
-      <div className="flex items-center justify-center gap-3 text-gray-300">
-        <MapPin className="w-6 h-6 text-[#8BB6B1]" />
-        <span className="text-lg">Yelagiri Hills, Tirpathur District.</span>
-      </div>
+     <div className="flex items-center justify-center gap-3 text-gray-300">
+           <MapPin className="w-6 h-6 text-[#8BB6B1]" />
+           <a
+             href="https://www.google.com/maps?q=12.580024719238281,78.63467407226562&z=17&hl=en"
+             target="_blank"
+             rel="noopener noreferrer"
+             className="text-lg hover:underline"
+           >
+             Yelagiri Hills, Tirpathur District.
+           </a>
+         </div>
 {/* 
       <div className="flex items-center justify-center gap-3 text-gray-300">
         <IndianRupee className="w-6 h-6 text-[#8BB6B1]" />

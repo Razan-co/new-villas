@@ -17,6 +17,7 @@ export default function VillaGallery() {
     "/image13.png",
     "/image3.png",
     "/image16.jpeg",
+    "/bathroom.jpeg",
     "/image17.jpeg",
     "/image18.jpeg",
     "/image19.jpeg",
@@ -209,6 +210,7 @@ export default function VillaGallery() {
         <li>Parties, gatherings, or commercial events are not permitted</li>
         <li>Guests are expected to respect property rules, neighbors, and local laws.</li>
         <li>Noise levels should be kept reasonable, especially during night hours.</li>
+        <li>Guests are responsible for maintaining the villa and its amenities in good condition, Any damage or loss caused during the stay will be charged to the guest.</li>
       </ul>
     </div>
 
@@ -282,7 +284,6 @@ export default function VillaGallery() {
       <ul className="list-disc list-inside space-y-2 text-gray-300">
         <li>An advance payment of ₹10,000 is required at the time of booking</li>
         <li>Accepted modes of payment include Google Pay and bank transfer</li>
-        <li>The daily rate is ₹15,000 per day from Monday to Thursday and ₹20,000 per day from Friday to Sunday.</li>
       </ul>
     </div>
 
@@ -304,7 +305,6 @@ export default function VillaGallery() {
         <li>Swami Malai Hills - 16 min  (5.5 km)</li>
         <li>Jalagamparai Waterfalls - 5 min (1.2 km)</li>
         <li>Mountain View  Adventure - 12 min (2.6 km)</li>
-        <li>WhatsApp / Call: 9840942784, 9003723648</li>
       </ul>
     </div>
     <div className="space-y-3">

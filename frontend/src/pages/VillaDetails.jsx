@@ -15,7 +15,7 @@ import {
 import { gsap } from "gsap";
 
 export default function VillaDetails() {
-  const images = ["/image10.png", "/image11.png", "/image12.png", "/image13.png", "/image14.png"];
+  const images = ["/image10.png", "/image11.png", "/image12.png", "/image13.png"];
   const [index, setIndex] = useState(0);
 
   const currentRef = useRef(null);
@@ -134,7 +134,7 @@ export default function VillaDetails() {
 
       {/* DETAILS SECTION */}
       <section data-scroll-section className="px-5 md:px-20 py-10 bg-black text-white">
-        <h1 className="text-3xl font-bold">Townhouse Villa</h1>
+        <h1 className="text-3xl font-bold">Classy Villa</h1>
         <p className="text-gray-300 text-xl mt-1">Near AGS Resort, Yelagiri Hills, Tirpathur District.</p>
 
         <div className="grid grid-cols-2 md:grid-cols-3 text-md md:text-xl gap-y-4 gap-x-6 mt-7 text-gray-200">
@@ -144,17 +144,19 @@ export default function VillaDetails() {
           <div className="flex items-center gap-2"><Utensils size={18} /> Kitchen</div>
           <div className="flex items-center gap-2"><Plug size={18} /> Power Backup</div>
           <div className="flex items-center gap-2"><Flame size={18} /> Geyser</div>
-          <div className="flex items-center gap-2"><Wallet size={18} /> Card payment</div>
           <div className="flex items-center gap-2"><Tv size={18} /> TV</div>
           <div className="flex items-center gap-2"><Brush size={18} /> Daily Housekeeping</div>
         </div>
 
-        <div className="mt-8">
-          <div className="flex items-end gap-4">
-            <p className="text-3xl font-bold">₹15000</p>
-            <p className="text-gray-400 text-xl line-through">₹20000</p>
-          </div>
-        </div>
+         <div className="space-y-3 mt-10">
+      <h2 className="text-xl md:text-2xl font-semibold">
+        Tariff Details
+      </h2>
+      <ul className="list-disc list-inside space-y-2 text-gray-300">
+        <li>Weekdays(Monday - Thursday): ₹15,000 /- per night</li>
+        <li>Weekends(Friday, Saturday & Sunday): ₹20,000 /- per night</li>
+      </ul>
+    </div>
 
         <div className="mt-10">
           <h2 className="text-2xl font-bold mb-3">About this Villa</h2>

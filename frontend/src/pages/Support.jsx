@@ -31,7 +31,7 @@ export default function Support() {
           <h2 className="text-xl md:text-2xl font-semibold">2 Contact Us:</h2>
 
           <ul className="list-disc list-inside space-y-2 text-gray-300">
-            <li>Our dedicated support team is available via email, phone, or live chat. We strive to respond promptly and provide solutions to make your stay comfortable and worry-free.</li>
+            <li>Our dedicated support team is available via email, phone, or live chat. We strive to respond promptly and provide solutions to make your stay comfortable and stress-free.</li>
           </ul>
         </div>
       </div>

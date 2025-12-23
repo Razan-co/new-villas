@@ -1,20 +1,31 @@
 import { Link } from "react-router-dom";
+import { FaInstagram } from "react-icons/fa";
 
 export default function Footer() {
   return (
     <footer className="bg-black text-gray-300 pt-16 pb-10 px-6 md:px-16">
 
       {/* GRID */}
-      <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="max-w-8xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
 
         {/* LOGO */}
-        <div className="flex items-center">
-          <img
-            src="/logo.png"
-            alt="Classy Villas Logo"
-            className="w-24 h-20 rounded-full"
-          />
-        </div>
+      <div className="flex flex-col items-start md:items-center gap-4">
+  <img
+    src="/logo.png"
+    alt="Classy Villas Logo"
+    className="w-24 h-20 rounded-full"
+  />
+
+ <a
+  href="https://www.instagram.com/classy.villa?igsh=MWp3Yzg0cnlzdDNneA=="
+  target="_blank"
+  rel="noopener noreferrer"
+  className="flex items-center gap-2 text-gray-300 hover:text-pink-500 transition"
+>
+  <FaInstagram className="w-6 h-6" />
+  <span className=" md:inline">@classyvilla</span>
+</a>
+</div>
 
         {/* ADDRESS */}
         <div className="text-sm space-y-3">

@@ -15,7 +15,7 @@ export default function MansionShowcase() {
         <p className="text-gray-300 leading-relaxed max-w-3xl ml-auto">
           Classy Villa is the embodiment of refined elegance — a collection of 
           contemporary luxury villa crafted for families who value privacy, warmth, 
-          and timeless design. Each villa is an architectural masterpiece that blends 
+          and timeless design. Our villa is an architectural masterpiece that blends 
           space, natural light, and sophistication to create a sanctuary of comfort 
           and exclusivity.
         </p>

@@ -12,14 +12,14 @@ export default function Trust() {
 
         {/* INTRO PARAGRAPH */}
         <p className="leading-relaxed text-gray-300 text-lg">
-        At Classy Villa, your safety and peace of mind are our top priorities. Every villa is carefully verified to meet high standards of security, hygiene, and comfort. We ensure that your stay is safe, secure, and worry-free.
+        At Classy Villa, your safety and peace of mind are our top priorities. Our villa is carefully verified to meet high standards of security, hygiene, and comfort. We ensure that your stay is safe, secure, and worry-free.
         </p>
 
         {/* SECTION 1 */}
         <div className="space-y-3">
           <h2 className="text-xl md:text-2xl font-semibold">1 Guest Safety:</h2>
         <ul className="list-disc list-inside space-y-2 text-gray-300">
-            <li>All villa listed are verified for safety, hygiene, and legal compliance.</li>
+            <li>Our villa listed are verified for safety, hygiene, and legal compliance.</li>
             <li>Safety features such as fire extinguishers, smoke detectors, and first-aid kits are provided where applicable.</li>
           </ul>
         </div>

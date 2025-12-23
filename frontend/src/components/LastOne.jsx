@@ -26,7 +26,7 @@ export default function LastOne() {
         </h2>
 
         <p className="text-gray-300 leading-relaxed max-w-3xl ml-auto">
-       At Classy Villa, timeless charm is reimagined through contemporary craftsmanship. Each residence reflects a perfect blend of heritage elegance and modern sophistication — designed for Chennai’s most discerning families who appreciate artistry, comfort, and legacy living.
+       At Classy Villa, timeless charm is reimagined through contemporary craftsmanship. Our residence reflects a perfect blend of heritage elegance and modern sophistication — designed for the most discerning families who appreciate artistry, comfort, and legacy living.
         </p>
       </div>
 
@@ -86,7 +86,6 @@ export default function LastOne() {
   {/* Details BELOW BOTH columns */}
   <div className="text-gray-300 text-lg leading-relaxed mt-10 text-center order-3">
     <p>
-       Overall Property | Lifestyle Section <br />
 
      A Home Designed for Living<br />
      A perfect balance of privacy, comfort, and contemporary luxury for modern families. <br />
