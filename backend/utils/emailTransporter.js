@@ -1,72 +1,52 @@
-const nodemailer = require('nodemailer');
 require('dotenv').config();
+const { Resend } = require('resend'); 
 const { customerConfirmationTemplate, ownerNotificationTemplate } = require('./emailTemplates');
 
-// ✅ FIXED TRANSPORTER FOR RENDER
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com', // Use the direct hostname
-  port: 587, // Switch back to 587 (STARTTLS) - often more reliable on Render than 465
-  secure: false, // Must be false for port 587
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  // ⬇️ CRITICAL FIXES FOR RENDER ⬇️
-  family: 4, // Force IPv4 (Fixes ETIMEDOUT on cloud servers)
-  logger: true, // Logs SMTP traffic to console for easier debugging
-  debug: true,  // Includes payload in logs
-  tls: {
-    rejectUnauthorized: false, // Accept self-signed certs if necessary
-    ciphers: 'SSLv3' // Force legacy cipher support if handshake fails
-  },
-  connectionTimeout: 10000, // 10 seconds
-  greetingTimeout: 5000,    // 5 seconds
-  socketTimeout: 10000      // 10 seconds
-});
-
-// Verify connection immediately
-transporter.verify((error, success) => {
-  if (error) {
-    console.error('❌ SMTP Connection Failed:', error);
-  } else {
-    console.log('✅ SMTP Server Ready (IPv4 Forced)');
-  }
-});
+// Initialize Resend with your API Key
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendCustomerEmail = async (booking) => {
   const bookingRef = booking._id.toString().slice(-6).toUpperCase();
-  console.log(`📧 Attempting to send to customer: ${booking.email}`);
+  console.log(`📧 Sending to Customer: ${booking.email}`);
 
   try {
-    const info = await transporter.sendMail({
-      from: `"Classy Villa Bookings" <${process.env.EMAIL_USER}>`,
-      to: booking.email,
+    const data = await resend.emails.send({
+      // ✅ VITAL: Use your VERIFIED domain here to avoid spam
+      from: 'Classy Villa Reservations <bookings@theclassyvilla.com>',
+      
+      // ✅ Customer replies will go to your Gmail
+      reply_to: process.env.RESORT_OWNER_EMAIL, 
+      
+      to: [booking.email],
       subject: `Booking Confirmed! Your Villa Stay #${bookingRef} 🎉`,
       html: customerConfirmationTemplate(booking),
     });
-    console.log('✅ Customer Email Sent. ID:', info.messageId);
-    return info;
+
+    console.log('✅ Customer Email Sent via Resend:', data.id);
+    return data;
   } catch (error) {
-    console.error('❌ Customer Email Failed:', error.message);
-    throw error;
+    console.error('❌ Resend Customer Email Failed:', error);
+    // Return null instead of throwing so the owner email still tries to send
+    return null;
   }
 };
 
 const sendOwnerEmail = async (booking) => {
-  console.log(`📧 Attempting to send to owner: ${process.env.RESORT_OWNER_EMAIL}`);
+  console.log(`📧 Sending to Owner: ${process.env.RESORT_OWNER_EMAIL}`);
 
   try {
-    const info = await transporter.sendMail({
-      from: `"System Alert" <${process.env.EMAIL_USER}>`,
-      to: process.env.RESORT_OWNER_EMAIL,
+    const data = await resend.emails.send({
+      from: 'System Alert <bookings@theclassyvilla.com>',
+      to: [process.env.RESORT_OWNER_EMAIL],
       subject: `🆕 NEW BOOKING #${booking._id.toString().slice(-6).toUpperCase()}`,
       html: ownerNotificationTemplate(booking),
     });
-    console.log('✅ Owner Email Sent. ID:', info.messageId);
-    return info;
+
+    console.log('✅ Owner Email Sent via Resend:', data.id);
+    return data;
   } catch (error) {
-    console.error('❌ Owner Email Failed:', error.message);
-    throw error;
+    console.error('❌ Resend Owner Email Failed:', error);
+    return null;
   }
 };
 

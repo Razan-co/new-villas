@@ -42,21 +42,14 @@ exports.createBooking = async (req, res) => {
 
     console.log(`📝 Booking Created: ${booking._id}`);
 
-    // 3. Send Emails (Non-blocking)
-    // We use Promise.allSettled so if email fails, the API response still works
-    Promise.allSettled([
+    // 3. Send Emails (Fire and Forget)
+    // The browser gets a response immediately, emails send in background
+    Promise.all([
       sendCustomerEmail(booking),
       sendOwnerEmail(booking)
-    ]).then((results) => {
-      const rejected = results.filter(r => r.status === 'rejected');
-      if (rejected.length > 0) {
-        console.error('⚠️ Some emails failed to send:', rejected.map(r => r.reason));
-      } else {
-        console.log('✅ All emails sent successfully');
-      }
-    });
+    ]).catch(err => console.error('⚠️ Background email error:', err));
 
-    // 4. Return Success Response immediately
+    // 4. Success Response
     res.status(201).json({
       success: true,
       message: 'Booking created successfully (Pending Confirmation)',
