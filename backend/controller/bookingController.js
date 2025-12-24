@@ -1,16 +1,14 @@
 const Booking = require('../models/booking');
 const User = require('../models/user');
-const { customerConfirmationTemplate, ownerNotificationTemplate } = require('../utils/emailTemplates');
-const transporter = require('../utils/emailTransporter');
+const { sendCustomerEmail, sendOwnerEmail } = require('../utils/emailTransporter');
 
-
-// Create booking
+// Create booking (with Resend emails)
 exports.createBooking = async (req, res) => {
   try {
     const { checkIn, checkOut, days, price, fullName, email, persons, address, phone, villaId } = req.body;
     const userId = req.user.id;
 
-    // Check date conflicts
+    // 1. Check date conflicts
     const existingBooking = await Booking.findOne({
       villaId,
       $or: [
@@ -25,6 +23,7 @@ exports.createBooking = async (req, res) => {
       });
     }
 
+    // 2. Create the booking
     const booking = await Booking.create({
       checkIn: new Date(checkIn),
       checkOut: new Date(checkOut),
@@ -41,46 +40,34 @@ exports.createBooking = async (req, res) => {
       paymentConfirmed: false,
     });
 
-    // ✅ SEND EMAILS AFTER SUCCESSFUL CREATION (FIXED)
-    try {
-      // Convert ObjectId to string for email templates
-      const bookingId = booking._id.toString();
-      const bookingRef = bookingId.slice(-6).toUpperCase();
+    console.log(`📝 Booking Created: ${booking._id}`);
 
-      // 1. Customer confirmation email
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: booking.email,
-        subject: `Booking Confirmed! Your Villa Stay #${bookingRef}`,
-        html: customerConfirmationTemplate(booking),
-      });
+    // 3. Send Emails (Non-blocking)
+    // We use Promise.allSettled so if email fails, the API response still works
+    Promise.allSettled([
+      sendCustomerEmail(booking),
+      sendOwnerEmail(booking)
+    ]).then((results) => {
+      const rejected = results.filter(r => r.status === 'rejected');
+      if (rejected.length > 0) {
+        console.error('⚠️ Some emails failed to send:', rejected.map(r => r.reason));
+      } else {
+        console.log('✅ All emails sent successfully');
+      }
+    });
 
-      // 2. Owner notification email
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: process.env.RESORT_OWNER_EMAIL,
-        subject: `🆕 New Booking Received - ₹${booking.price.toLocaleString('en-IN')}`,
-        html: ownerNotificationTemplate(booking),
-      });
-
-      console.log('✅ Both confirmation emails sent successfully');
-      console.log('Booking ID:', bookingRef);
-    } catch (emailError) {
-      console.error('Email sending failed:', emailError);
-      // Don't fail the booking if email fails
-    }
-
+    // 4. Return Success Response immediately
     res.status(201).json({
       success: true,
       message: 'Booking created successfully (Pending Confirmation)',
       data: booking,
     });
+
   } catch (err) {
-    console.error('Create booking error:', err);
+    console.error('❌ Create booking error:', err);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
-
 
 // Get bookings by user ID (protected)
 exports.getUserBookings = async (req, res) => {
@@ -116,7 +103,7 @@ exports.getBookingsForAvailability = async (req, res) => {
   }
 };
 
-// Add these new functions
+// Update booking status (admin only)
 exports.updateBookingStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -148,6 +135,7 @@ exports.updateBookingStatus = async (req, res) => {
   }
 };
 
+// Get all bookings (admin only)
 exports.getAllBookings = async (req, res) => {
   try {
     // Only admin can see all bookings
@@ -168,5 +156,3 @@ exports.getAllBookings = async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
-
-
