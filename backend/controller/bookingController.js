@@ -1,11 +1,14 @@
 const Booking = require('../models/booking');
 const User = require('../models/user');
+const { customerConfirmationTemplate, ownerNotificationTemplate } = require('../utils/emailTemplates');
+const transporter = require('../utils/emailTransporter');
+
 
 // Create booking
 exports.createBooking = async (req, res) => {
   try {
     const { checkIn, checkOut, days, price, fullName, email, persons, address, phone, villaId } = req.body;
-    const userId = req.user.id; // from auth middleware
+    const userId = req.user.id;
 
     // Check date conflicts
     const existingBooking = await Booking.findOne({
@@ -22,7 +25,7 @@ exports.createBooking = async (req, res) => {
       });
     }
 
-   const booking = await Booking.create({
+    const booking = await Booking.create({
       checkIn: new Date(checkIn),
       checkOut: new Date(checkOut),
       days,
@@ -34,11 +37,40 @@ exports.createBooking = async (req, res) => {
       phone,
       villaId,
       userId,
-      status: 'pending', // ✅ Default pending status
+      status: 'pending',
       paymentConfirmed: false,
     });
 
-  res.status(201).json({
+    // ✅ SEND EMAILS AFTER SUCCESSFUL CREATION (FIXED)
+    try {
+      // Convert ObjectId to string for email templates
+      const bookingId = booking._id.toString();
+      const bookingRef = bookingId.slice(-6).toUpperCase();
+
+      // 1. Customer confirmation email
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: booking.email,
+        subject: `Booking Confirmed! Your Villa Stay #${bookingRef}`,
+        html: customerConfirmationTemplate(booking),
+      });
+
+      // 2. Owner notification email
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: process.env.RESORT_OWNER_EMAIL,
+        subject: `🆕 New Booking Received - ₹${booking.price.toLocaleString('en-IN')}`,
+        html: ownerNotificationTemplate(booking),
+      });
+
+      console.log('✅ Both confirmation emails sent successfully');
+      console.log('Booking ID:', bookingRef);
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+      // Don't fail the booking if email fails
+    }
+
+    res.status(201).json({
       success: true,
       message: 'Booking created successfully (Pending Confirmation)',
       data: booking,
@@ -48,6 +80,7 @@ exports.createBooking = async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
+
 
 // Get bookings by user ID (protected)
 exports.getUserBookings = async (req, res) => {

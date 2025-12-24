@@ -28,7 +28,7 @@ export default function SignupMail() {
 
     try {
       await signup(formData);
-      navigate("/dashboard");
+      navigate("/");
     } catch (err) {
       // error already handled in store
     }

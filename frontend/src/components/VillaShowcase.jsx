@@ -1,16 +1,16 @@
 import React from "react";
 import { MapPin, IndianRupee } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuthStore } from "../store/useAuthStore";
+import { useAuthStore } from "../store/authStore";
 
 export default function VillaShowcase() {
 
     const navigate = useNavigate();
     // const isAuthenticated = true; // force login ON
-  const {isAuthenticated} = useAuthStore();
+  const {user,loading} = useAuthStore();
 
   const handleBookNow = () => {
-    if (!isAuthenticated) {
+    if (!user&&!loading) {
       navigate("/login"); // redirect to login
     } else {
       navigate("/book"); // user logged in → go to villa detail page
