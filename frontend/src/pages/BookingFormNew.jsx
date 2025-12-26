@@ -280,19 +280,51 @@ export default function BookingForm() {
               />
             </div>
 
-            <div>
-              <label className="block font-semibold mb-2">Number of Persons</label>
-              <input
-                type="number"
-                name="persons"
-                value={form.persons}
-                onChange={handlePersonsChange}
-                min="1"
-                max="10"
-                className="w-full bg-transparent border border-gray-400 px-4 py-3 rounded-lg text-white focus:border-[#0aa8e6]"
-              />
-              <p className="text-xs text-gray-400 mt-1">Maximum 10 persons</p>
-            </div>
+          <div>
+  <label className="block font-semibold mb-2">
+    Number of Persons
+  </label>
+
+  <div className="flex items-center border border-gray-400 rounded-md overflow-hidden w-max">
+    {/* Decrement */}
+    <button
+      type="button"
+      onClick={() =>
+        setForm((prev) => ({
+          ...prev,
+          persons: Math.max(1, prev.persons - 1),
+        }))
+      }
+      className="px-5 py-3 bg-gray-700 text-white text-xl"
+    >
+      −
+    </button>
+
+    {/* Number */}
+    <div className="flex-1 text-center bg-black text-white text-lg font-semibold w-[270px] md:min-w-[330px] py-3">
+      {form.persons}
+    </div>
+
+    {/* Increment */}
+    <button
+      type="button"
+      onClick={() =>
+        setForm((prev) => ({
+          ...prev,
+          persons: Math.min(10, prev.persons + 1),
+        }))
+      }
+      className="px-5 py-3 bg-gray-700 text-white text-xl"
+    >
+      +
+    </button>
+  </div>
+
+  <p className="text-xs text-gray-400 mt-1">
+    Maximum 10 persons
+  </p>
+</div>
+
           </div>
 
           {/* Address */}
