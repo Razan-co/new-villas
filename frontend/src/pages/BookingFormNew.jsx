@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import dayjs from "dayjs";
@@ -14,9 +14,17 @@ dayjs.extend(isSameOrAfter);
 
 export default function BookingForm() {
   const navigate = useNavigate();
-  const { fetchAvailability, createBooking, loading, error, bookedDates } = useBookingStore();
+  const {
+    fetchAvailability,
+    createBooking,
+    loading,
+    error,
+    bookedDates,
+  } = useBookingStore();
 
-  const PRICE_PER_DAY = 15000;
+  // ✅ Prices
+  const WEEKDAY_PRICE = 15000; // Mon–Thu
+  const WEEKEND_PRICE = 20000; // Fri–Sun
 
   const [form, setForm] = useState({
     checkIn: "",
@@ -31,17 +39,32 @@ export default function BookingForm() {
     villaId: "villa-1",
   });
 
-  // ✅ Fetch availability on mount
+  // ✅ Fetch availability
   useEffect(() => {
     fetchAvailability();
   }, []);
 
-  // Auto-calc days & price
+  // ✅ Auto-calc days & price (UPDATED LOGIC ONLY)
   useEffect(() => {
     if (form.checkIn && form.checkOut) {
       const diff = dayjs(form.checkOut).diff(dayjs(form.checkIn), "day");
+
       if (diff > 0) {
-        const totalPrice = diff * PRICE_PER_DAY;
+        let totalPrice = 0;
+        let current = dayjs(form.checkIn);
+
+        while (current.isBefore(dayjs(form.checkOut))) {
+          const day = current.day(); // 0=Sun, 1=Mon ... 6=Sat
+
+          if (day >= 1 && day <= 4) {
+            totalPrice += WEEKDAY_PRICE; // Mon–Thu
+          } else {
+            totalPrice += WEEKEND_PRICE; // Fri–Sun
+          }
+
+          current = current.add(1, "day");
+        }
+
         setForm((prev) => ({
           ...prev,
           days: String(diff),
@@ -57,23 +80,23 @@ export default function BookingForm() {
       const bookingStart = dayjs(booking.checkIn);
       const bookingEnd = dayjs(booking.checkOut);
       const checkDate = dayjs(date);
-      return checkDate.isAfter(bookingStart) && checkDate.isBefore(bookingEnd);
+      return (
+        checkDate.isAfter(bookingStart) &&
+        checkDate.isBefore(bookingEnd)
+      );
     });
   };
 
-  // ✅ Filter out booked dates
-  const excludeBookedDates = (date) => {
-    return !isDateBooked(date);
-  };
+  const excludeBookedDates = (date) => !isDateBooked(date);
 
+  // ❗ Kept unchanged (manual days × weekday price)
   const handleDaysChange = (e) => {
-    const totalPrice = Number(e.target.value || 0) * PRICE_PER_DAY;
-    setForm((prev) => ({ ...prev, days: e.target.value, price: totalPrice }));
-  };
-
-  const handlePersonsChange = (e) => {
-    const personsValue = Math.min(10, Math.max(1, Number(e.target.value)));
-    setForm((prev) => ({ ...prev, persons: personsValue }));
+    const days = Number(e.target.value || 0);
+    setForm((prev) => ({
+      ...prev,
+      days: e.target.value,
+      price: days * WEEKDAY_PRICE,
+    }));
   };
 
   const handleInputChange = (e) => {
@@ -81,7 +104,7 @@ export default function BookingForm() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Validation
+  // ✅ Validation (unchanged)
   const validate = () => {
     if (!form.checkIn || !form.checkOut) {
       toast.error("Please choose check-in and check-out dates.");
@@ -120,6 +143,7 @@ export default function BookingForm() {
     e.preventDefault();
     if (!validate()) return;
 
+    // ✅ PAYLOAD UNCHANGED
     const payload = {
       checkIn: form.checkIn,
       checkOut: form.checkOut,
@@ -143,7 +167,7 @@ export default function BookingForm() {
   };
 
   return (
-    <div data-scroll-section className="min-h-screen bg-black text-white mt-10 py-20 px-4 md:px-12">
+    <div className="min-h-screen bg-black text-white mt-10 py-20 px-4 md:px-12">
       {/* Banner */}
       <div className="max-w-5xl mx-auto mb-20">
         <img

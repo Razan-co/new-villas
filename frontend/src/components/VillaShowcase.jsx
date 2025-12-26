@@ -6,8 +6,8 @@ import { useAuthStore } from "../store/authStore";
 export default function VillaShowcase() {
 
     const navigate = useNavigate();
-    // const isAuthenticated = true; // force login ON
-  const {user,loading} = useAuthStore();
+    const user = true; // force login ON
+  const {loading} = useAuthStore();
 
   const handleBookNow = () => {
     if (!user&&!loading) {
