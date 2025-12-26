@@ -7,8 +7,7 @@ export default function VillaShowcase() {
 
     const navigate = useNavigate();
     // const isAuthenticated = true; // force login ON
-const user = true
-  const {loading} = useAuthStore();
+  const {user,loading} = useAuthStore();
 
   const handleBookNow = () => {
     if (!user&&!loading) {
