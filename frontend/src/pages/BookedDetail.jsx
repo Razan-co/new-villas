@@ -70,7 +70,7 @@ export default function MyBookings() {
             No bookings found
           </h2>
           <button
-            onClick={() => navigate("/booking")}
+            onClick={() => navigate("/book")}
             className="bg-[#0aa8e6] hover:bg-[#0895c9] px-8 py-3 rounded-xl font-semibold transition"
           >
             Book Villa Now

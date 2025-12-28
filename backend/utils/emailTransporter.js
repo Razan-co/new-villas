@@ -1,6 +1,6 @@
 require('dotenv').config();
 const { Resend } = require('resend'); 
-const { customerConfirmationTemplate, ownerNotificationTemplate } = require('./emailTemplates');
+const { customerConfirmationTemplate, ownerNotificationTemplate, customerCancelTemplate, ownerCancelTemplate } = require('./emailTemplates');
 
 // Initialize Resend with your API Key
 const resend = new Resend(process.env.RESEND_API_KEY);

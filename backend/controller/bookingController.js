@@ -1,6 +1,6 @@
 const Booking = require('../models/booking');
 const User = require('../models/user');
-const { sendCustomerEmail, sendOwnerEmail } = require('../utils/emailTransporter');
+const { sendCustomerEmail, sendOwnerEmail, sendCustomerCancelEmail, sendOwnerCancelEmail } = require('../utils/emailTransporter');
 
 // Create booking (with Resend emails)
 exports.createBooking = async (req, res) => {

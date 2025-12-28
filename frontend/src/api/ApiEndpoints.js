@@ -11,19 +11,26 @@ class ApiEndpoints {
   static AUTH_CHANGE_PASSWORD = "/api/auth/change-password";
   static AUTH_LOGOUT = "/api/auth/logout";
 
-  // Booking
+  // Booking (user)
   static BOOKING_AVAILABILITY = "/api/booking/availability";
   static BOOKING_CREATE = "/api/booking";
   static BOOKING_MY_BOOKINGS = "/api/booking/my-bookings";
-  static BOOKING_UPDATE_STATUS = "/api/booking/:id/status";
-  static BOOKING_ADMIN_ALL = "/api/booking/admin/all";
-
-  // ✅ New: cancel booking (dynamic :id)
   static BOOKING_CANCEL = "/api/booking/:id/cancel";
 
-  // ✅ Optional helper to generate real URL from id
+  // Admin
+  static ADMIN_BOOKINGS = "/api/admin/bookings";
+  static ADMIN_UPDATE_STATUS = "/api/admin/bookings/:id/status";
+  static ADMIN_DELETE_BOOKING = "/api/admin/bookings/:id";
+
+  // Helpers
   static bookingCancelUrl(id) {
     return `/api/booking/${id}/cancel`;
+  }
+  static adminUpdateStatusUrl(id) {
+    return `/api/admin/bookings/${id}/status`;
+  }
+  static adminDeleteBookingUrl(id) {
+    return `/api/admin/bookings/${id}`;
   }
 }
 

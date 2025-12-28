@@ -44,7 +44,7 @@ export default function BookingForm() {
     fetchAvailability();
   }, []);
 
-  // ✅ Auto-calc days & price (UPDATED LOGIC ONLY)
+  // ✅ Auto-calc days & price
   useEffect(() => {
     if (form.checkIn && form.checkOut) {
       const diff = dayjs(form.checkOut).diff(dayjs(form.checkIn), "day");
@@ -74,22 +74,21 @@ export default function BookingForm() {
     }
   }, [form.checkIn, form.checkOut]);
 
-  // ✅ Check if date is booked
+  // ✅ FIXED: Block ALL dates in range (checkIn, checkOut INCLUSIVE)
   const isDateBooked = (date) => {
     return bookedDates.some((booking) => {
       const bookingStart = dayjs(booking.checkIn);
       const bookingEnd = dayjs(booking.checkOut);
       const checkDate = dayjs(date);
-      return (
-        checkDate.isAfter(bookingStart) &&
-        checkDate.isBefore(bookingEnd)
-      );
+      
+      // ✅ FIXED: Include checkIn AND checkOut dates
+      return checkDate.isSameOrAfter(bookingStart) && 
+             checkDate.isSameOrBefore(bookingEnd);
     });
   };
 
   const excludeBookedDates = (date) => !isDateBooked(date);
 
-  // ❗ Kept unchanged (manual days × weekday price)
   const handleDaysChange = (e) => {
     const days = Number(e.target.value || 0);
     setForm((prev) => ({
@@ -104,7 +103,7 @@ export default function BookingForm() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ✅ Validation (unchanged)
+  // ✅ Validation
   const validate = () => {
     if (!form.checkIn || !form.checkOut) {
       toast.error("Please choose check-in and check-out dates.");
@@ -143,7 +142,6 @@ export default function BookingForm() {
     e.preventDefault();
     if (!validate()) return;
 
-    // ✅ PAYLOAD UNCHANGED
     const payload = {
       checkIn: form.checkIn,
       checkOut: form.checkOut,
@@ -304,51 +302,45 @@ export default function BookingForm() {
               />
             </div>
 
-          <div>
-  <label className="block font-semibold mb-2">
-    Number of Persons
-  </label>
+            <div>
+              <label className="block font-semibold mb-2">Number of Persons</label>
+              <div className="flex items-center border border-gray-400 rounded-md overflow-hidden w-max">
+                {/* Decrement */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setForm((prev) => ({
+                      ...prev,
+                      persons: Math.max(1, prev.persons - 1),
+                    }))
+                  }
+                  className="px-5 py-3 bg-gray-700 text-white text-xl"
+                >
+                  −
+                </button>
 
-  <div className="flex items-center border border-gray-400 rounded-md overflow-hidden w-max">
-    {/* Decrement */}
-    <button
-      type="button"
-      onClick={() =>
-        setForm((prev) => ({
-          ...prev,
-          persons: Math.max(1, prev.persons - 1),
-        }))
-      }
-      className="px-5 py-3 bg-gray-700 text-white text-xl"
-    >
-      −
-    </button>
+                {/* Number */}
+                <div className="flex-1 text-center bg-black text-white text-lg font-semibold w-[270px] md:min-w-[330px] py-3">
+                  {form.persons}
+                </div>
 
-    {/* Number */}
-    <div className="flex-1 text-center bg-black text-white text-lg font-semibold w-[270px] md:min-w-[330px] py-3">
-      {form.persons}
-    </div>
+                {/* Increment */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setForm((prev) => ({
+                      ...prev,
+                      persons: Math.min(10, prev.persons + 1),
+                    }))
+                  }
+                  className="px-5 py-3 bg-gray-700 text-white text-xl"
+                >
+                  +
+                </button>
+              </div>
 
-    {/* Increment */}
-    <button
-      type="button"
-      onClick={() =>
-        setForm((prev) => ({
-          ...prev,
-          persons: Math.min(10, prev.persons + 1),
-        }))
-      }
-      className="px-5 py-3 bg-gray-700 text-white text-xl"
-    >
-      +
-    </button>
-  </div>
-
-  <p className="text-xs text-gray-400 mt-1">
-    Maximum 10 persons
-  </p>
-</div>
-
+              <p className="text-xs text-gray-400 mt-1">Maximum 10 persons</p>
+            </div>
           </div>
 
           {/* Address */}

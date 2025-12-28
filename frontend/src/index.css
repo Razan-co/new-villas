@@ -32,3 +32,18 @@ html, body {
   scrollbar-color: auto;     /* default color without borders */
 }
 
+/* Custom dropdown arrow */
+select.bg-arrow-down {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a1a1aa' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.75rem center;
+  background-repeat: no-repeat;
+  background-size: 1.2em 1.2em;
+  padding-right: 2.5rem;
+}
+
+/* Dark theme select options fix */
+select option {
+  background: #1f2937 !important;
+  color: #f9fafb !important;
+  padding: 8px 12px;
+}

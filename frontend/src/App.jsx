@@ -26,6 +26,7 @@ import BookingFormNew from "./pages/BookingFormNew";
 import AdminBookings from "./pages/AdminDashBoard";
 import BookingSuccess from "./pages/BookingSuccess";
 import { useEffect } from "react";
+import AdminDashboard from "./pages/AdminDashBoard";
 
 export default function App() {
 
@@ -37,7 +38,7 @@ export default function App() {
   const location = useLocation();
 
   // Pages without navbar & footer
-  const noLayoutPages = ["/login", "/otp","/signup"];
+  const noLayoutPages = ["/login", "/otp","/signup","/admin"];
   const hideLayout = noLayoutPages.includes(location.pathname);
 
   return (
@@ -70,7 +71,8 @@ export default function App() {
         <Route path="/term" element={<Term />} />
         <Route path="/guest" element={<Guest />} />
         <Route path="/trust" element={<Trust />} />
-        <Route path="/admin/bookings" element={<AdminBookings />} />
+        {/* <Route path="/admin/bookings" element={<AdminBookings />} /> */}
+         <Route path="/admin" element={<AdminDashboard />} />
       </Routes>
 
       {/* ✅ FOOTER ONLY ON NORMAL PAGES */}
