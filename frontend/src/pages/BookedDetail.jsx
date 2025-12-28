@@ -132,7 +132,7 @@ export default function MyBookings() {
                   <div className="flex items-center gap-3">
                     <Phone size={18} className="text-green-400" />
                     <span className="font-mono text-green-300">
-                      {booking.phone}
+                      {/* {booking.phone} */}9840942784
                     </span>
                   </div>
                 </div>

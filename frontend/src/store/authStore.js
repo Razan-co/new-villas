@@ -3,16 +3,18 @@ import { create } from 'zustand';
 import apiClient from '../api/apiclient';
 import ApiEndpoints from '../api/ApiEndpoints';
 
-
 const initialState = {
   user: null,
   loading: false,
   error: null,
+  initialized: false, // ✅ CRITICAL: Tracks if auth check is complete
 };
 
-export const useAuthStore = create((set,get) => ({
+export const useAuthStore = create((set, get) => ({
   ...initialState,
-   checkAuth: async () => {
+
+  // ✅ FIXED: Always sets initialized: true
+  checkAuth: async () => {
     try {
       set({ loading: true, error: null });
       
@@ -20,21 +22,22 @@ export const useAuthStore = create((set,get) => ({
       const user = res.data?.data?.user || null;
       
       if (user) {
-        set({ user, loading: false });
+        set({ user, loading: false, initialized: true });
         return user;
       }
       
-      set({ loading: false });
+      set({ loading: false, initialized: true });
       return null;
     } catch (err) {
-      set({ loading: false });
+      console.error('Auth check failed:', err);
+      set({ loading: false, initialized: true }); // ✅ Always set initialized
       return null;
     }
   },
 
-  // ✅ FIXED: Now uses get() correctly
+  // ✅ Perfectly initializes auth state
   initializeAuth: async () => {
-    await get().checkAuth(); // ✅ get() works now
+    await get().checkAuth();
   },
 
   // Helpers
@@ -150,15 +153,20 @@ export const useAuthStore = create((set,get) => ({
     }
   },
 
-  // Logout
+  // Logout - ✅ Properly resets initialized state
   logout: async () => {
     try {
       set({ loading: true, error: null });
 
-      const res = await apiClient.post(ApiEndpoints.AUTH_LOGOUT);
+      await apiClient.post(ApiEndpoints.AUTH_LOGOUT);
 
-      set({ user: null, loading: false });
-      return res.data;
+      set({ 
+        user: null, 
+        loading: false, 
+        error: null,
+        initialized: true // ✅ Keep initialized true after logout
+      });
+      return true;
     } catch (err) {
       const message =
         err?.response?.data?.message || 'Logout failed. Please try again.';
@@ -166,4 +174,12 @@ export const useAuthStore = create((set,get) => ({
       throw err;
     }
   },
+
+  // ✅ Selector helpers for components
+  isAuthenticated: (state) => !!state.user,
+  isAdmin: (state) => state.user?.role === 'admin',
+  isLoading: (state) => state.loading,
+  isInitialized: (state) => state.initialized,
 }));
+
+export default useAuthStore;

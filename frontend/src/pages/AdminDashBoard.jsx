@@ -1,28 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAdminStore } from "../store/adminStore";
 import { useAuthStore } from "../store/authStore";
 import dayjs from "dayjs";
 import { Trash2, Calendar, User, RefreshCw } from "lucide-react";
 
 export default function AdminDashboard() {
-  const navigate = useNavigate();
   const { user, loading: userLoading } = useAuthStore();
   const { bookings, loading, error, fetchAdminBookings, updateBookingStatus, deleteBooking } = useAdminStore();
   const [updatingId, setUpdatingId] = useState(null);
 
   useEffect(() => {
     if (userLoading) return;
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-    if (user.role !== 'admin') {
-      navigate('/');
-      return;
-    }
     fetchAdminBookings();
-  }, [userLoading, user, navigate, fetchAdminBookings]);
+  }, [userLoading, fetchAdminBookings]);
 
   const handleStatusChange = async (bookingId, newStatus) => {
     setUpdatingId(bookingId);
@@ -42,26 +32,6 @@ export default function AdminDashboard() {
         <div className="text-center">
           <div className="w-12 h-12 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mx-auto mb-4"></div>
           <div className="text-xl font-medium text-gray-300">Loading...</div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user || user?.role !== 'admin') {
-    return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-4">
-        <div className="text-center max-w-sm mx-auto p-8 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10">
-          <div className="w-20 h-20 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border-2 border-red-500/20">
-            <Trash2 size={32} className="text-red-400" />
-          </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-red-400 mb-4">Access Denied</h1>
-          <p className="text-lg text-gray-400 mb-8">Admin privileges required</p>
-          <button
-            onClick={() => navigate('/')}
-            className="bg-[#0aa8e6] hover:bg-[#0895c9] px-8 py-3 rounded-2xl font-semibold transition-all shadow-xl hover:shadow-2xl"
-          >
-            Go Home
-          </button>
         </div>
       </div>
     );
@@ -107,7 +77,7 @@ export default function AdminDashboard() {
           </div>
           <div className="flex flex-col sm:flex-row gap-2 items-end lg:items-center w-full lg:w-auto">
             <div className="text-xs md:text-sm text-gray-500 text-right lg:text-left">
-              Welcome, <span className="font-semibold text-white">{user.name}</span>
+              Welcome, <span className="font-semibold text-white">{user?.name || 'Admin'}</span>
             </div>
             <button
               onClick={fetchAdminBookings}
@@ -194,32 +164,31 @@ export default function AdminDashboard() {
                       </td>
 
                       {/* Actions - Compact */}
-                     <td className="py-3 px-3 md:px-4">
-  <div className="flex items-center gap-1">
-    <select
-      value={booking.status}
-      onChange={(e) => handleStatusChange(booking._id, e.target.value)}
-      disabled={updatingId === booking._id || loading}
-      className="bg-gray-800/80 hover:bg-gray-700/80 border border-gray-600/50 hover:border-gray-500/70 text-white text-xs px-3 py-1.5 md:px-4 md:py-2 rounded-xl font-semibold min-w-[85px] cursor-pointer transition-all duration-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-400/50 focus:border-indigo-400/70 shadow-sm appearance-none
-                 disabled:bg-gray-900/50 disabled:cursor-not-allowed disabled:border-gray-700/50
-                 bg-no-repeat bg-[right_0.75rem_center] bg-arrow-down"
-    >
-      <option value="pending">Pending</option>
-      <option value="confirmed">Confirmed</option>
-      <option value="cancelled">Cancelled</option>
-    </select>
-    
-    <button
-      onClick={() => handleDelete(booking._id)}
-      disabled={loading}
-      className="p-1.5 hover:bg-red-500/20 text-red-400 hover:text-red-300 rounded-lg border border-red-500/30 hover:border-red-400/50 transition-all flex-shrink-0 group hover:scale-105 active:scale-95 shadow-sm hover:shadow-md"
-      title="Delete"
-    >
-      <Trash2 size={14} className="group-hover:scale-110 transition-transform" />
-    </button>
-  </div>
-</td>
-
+                      <td className="py-3 px-3 md:px-4">
+                        <div className="flex items-center gap-1">
+                          <select
+                            value={booking.status}
+                            onChange={(e) => handleStatusChange(booking._id, e.target.value)}
+                            disabled={updatingId === booking._id || loading}
+                            className="bg-gray-800/80 hover:bg-gray-700/80 border border-gray-600/50 hover:border-gray-500/70 text-white text-xs px-3 py-1.5 md:px-4 md:py-2 rounded-xl font-semibold min-w-[85px] cursor-pointer transition-all duration-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-400/50 focus:border-indigo-400/70 shadow-sm appearance-none
+                                   disabled:bg-gray-900/50 disabled:cursor-not-allowed disabled:border-gray-700/50
+                                   bg-no-repeat bg-[right_0.75rem_center] bg-arrow-down"
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="cancelled">Cancelled</option>
+                          </select>
+                          
+                          <button
+                            onClick={() => handleDelete(booking._id)}
+                            disabled={loading}
+                            className="p-1.5 hover:bg-red-500/20 text-red-400 hover:text-red-300 rounded-lg border border-red-500/30 hover:border-red-400/50 transition-all flex-shrink-0 group hover:scale-105 active:scale-95 shadow-sm hover:shadow-md"
+                            title="Delete"
+                          >
+                            <Trash2 size={14} className="group-hover:scale-110 transition-transform" />
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -240,4 +209,5 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
 //classyvilla@123
