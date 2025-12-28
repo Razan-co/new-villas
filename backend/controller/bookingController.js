@@ -149,3 +149,71 @@ exports.getAllBookings = async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
+
+
+// CANCEL booking (user-only, within 24 hours of creation)
+exports.cancelBooking = async (req, res) => {
+  try {
+    const { id } = req.params;      // booking _id
+    const userId = req.user.id;     // from protect middleware
+
+    const booking = await Booking.findById(id);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: 'Booking not found',
+      });
+    }
+
+    // Only the user who created the booking can cancel it
+    if (booking.userId.toString() !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to cancel this booking',
+      });
+    }
+
+    // Check 24-hour window from createdAt
+    const now = Date.now();
+    const createdTime = new Date(booking.createdAt).getTime();
+    const diffMs = now - createdTime;
+    const twentyFourHoursMs = 24 * 60 * 60 * 1000;
+
+    if (diffMs > twentyFourHoursMs) {
+      return res.status(400).json({
+        success: false,
+        message: 'Booking can only be cancelled within 24 hours of creation',
+      });
+    }
+
+    if (booking.status === 'cancelled') {
+      return res.status(400).json({
+        success: false,
+        message: 'Booking is already cancelled',
+      });
+    }
+
+    // ✅ UPDATE STATUS
+    booking.status = 'cancelled';
+    booking.paymentConfirmed = false;
+    await booking.save();
+
+    console.log(`❌ Booking Cancelled by User: ${booking._id}`);
+
+    // ✅ SEND EMAILS (Fire and Forget - same pattern as createBooking)
+    Promise.all([
+      sendCustomerCancelEmail(booking),
+      sendOwnerCancelEmail(booking)
+    ]).catch(err => console.error('⚠️ Background cancel email error:', err));
+
+    return res.json({
+      success: true,
+      message: 'Booking cancelled successfully',
+      data: booking,
+    });
+  } catch (err) {
+    console.error('Cancel booking error:', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};

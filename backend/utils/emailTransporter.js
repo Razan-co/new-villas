@@ -50,7 +50,49 @@ const sendOwnerEmail = async (booking) => {
   }
 };
 
+const sendCustomerCancelEmail = async (booking) => {
+  const bookingRef = booking._id.toString().slice(-6).toUpperCase();
+  console.log(`📧 Cancel → Customer: ${booking.email}`);
+
+  try {
+    const data = await resend.emails.send({
+      from: 'Classy Villa Reservations <bookings@theclassyvilla.com>',
+      reply_to: process.env.RESORT_OWNER_EMAIL,
+      to: [booking.email],
+      subject: `Booking Cancelled #${bookingRef} ❌`,
+      html: customerCancelTemplate(booking),
+    });
+
+    console.log('✅ Customer Cancel Email Sent:', data.id);
+    return data;
+  } catch (error) {
+    console.error('❌ Customer Cancel Email Failed:', error);
+    return null;
+  }
+};
+
+const sendOwnerCancelEmail = async (booking) => {
+  console.log(`📧 Cancel → Owner: ${process.env.RESORT_OWNER_EMAIL}`);
+
+  try {
+    const data = await resend.emails.send({
+      from: 'System Alert <bookings@theclassyvilla.com>',
+      to: [process.env.RESORT_OWNER_EMAIL],
+      subject: `🚫 Booking #${booking._id.toString().slice(-6).toUpperCase()} CANCELLED`,
+      html: ownerCancelTemplate(booking),
+    });
+
+    console.log('✅ Owner Cancel Email Sent:', data.id);
+    return data;
+  } catch (error) {
+    console.error('❌ Owner Cancel Email Failed:', error);
+    return null;
+  }
+};
+
 module.exports = {
   sendCustomerEmail,
-  sendOwnerEmail
+  sendOwnerEmail,
+  sendCustomerCancelEmail,  
+  sendOwnerCancelEmail,     
 };

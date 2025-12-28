@@ -2,52 +2,50 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useBookingStore } from "../store/bookingStore";
 import dayjs from "dayjs";
-import { Clock, Calendar, Phone } from "lucide-react";
+import { Calendar, Phone, X } from "lucide-react";
 
 export default function MyBookings() {
   const navigate = useNavigate();
-  const { bookings, loading, error, getMyBookings } = useBookingStore();
-  const [timeLeft, setTimeLeft] = useState({});
+  const {
+    bookings,
+    loading,
+    error,
+    getMyBookings,
+    cancelBooking,
+  } = useBookingStore();
+  const [cancelDialog, setCancelDialog] = useState({ open: false, bookingId: null });
+  const [cancellingId, setCancellingId] = useState(null);
 
   // Load bookings on mount
   useEffect(() => {
     getMyBookings();
   }, [getMyBookings]);
 
-  // ✅ REAL LIVE TIMER (SYNCED WITH SERVER TIME)
-  useEffect(() => {
-    if (!bookings || bookings.length === 0) return;
-
-    const interval = setInterval(() => {
-      const timers = {};
-
-      bookings.forEach((booking) => {
-        if (booking.status === "pending" && booking.createdAt) {
-          const expiryTime = dayjs(booking.createdAt).add(2, "hour");
-          const now = dayjs();
-          const diff = expiryTime.diff(now, "second");
-
-          timers[booking._id] = Math.max(0, diff);
-        }
-      });
-
-      setTimeLeft(timers);
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [bookings]);
-
-  // Format MM:SS
-  const formatTime = (seconds) => {
-    if (!seconds || seconds <= 0) return "00:00";
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
+  // Handle cancel with custom dialog
+  const openCancelDialog = (bookingId) => {
+    setCancelDialog({ open: true, bookingId });
   };
 
-  // UI STATES
+  const closeCancelDialog = () => {
+    setCancelDialog({ open: false, bookingId: null });
+  };
+
+  const confirmCancel = async () => {
+    if (!cancelDialog.bookingId) return;
+
+    setCancellingId(cancelDialog.bookingId);
+    closeCancelDialog();
+
+    try {
+      await cancelBooking(cancelDialog.bookingId);
+    } catch (err) {
+      // Error handled by store
+    } finally {
+      setCancellingId(null);
+    }
+  };
+
+  // UI STATES (same as before)
   if (loading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -83,22 +81,20 @@ export default function MyBookings() {
   }
 
   return (
-    <div className="md:min-h-screen h-[70vh] bg-black text-white pt-32 px-6 md:px-16">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl md:text-4xl font-bold mb-12 text-center">
-          My Bookings
-        </h1>
+    <>
+      <div className="md:min-h-screen h-[70vh] bg-black text-white pt-32 px-6 md:px-16">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl md:text-4xl font-bold mb-12 text-center">
+            My Bookings
+          </h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {bookings.map((booking) => {
-            const bookingTimeLeft = timeLeft[booking._id] || 0;
-
-            return (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {bookings.map((booking) => (
               <div
                 key={booking._id}
                 className="bg-gradient-to-br from-white/5 to-black/20 backdrop-blur-xl p-8 rounded-2xl border border-white/10"
               >
-                {/* STATUS + TIMER */}
+                {/* STATUS */}
                 <div className="flex justify-between mb-6">
                   <div
                     className={`px-4 py-2 rounded-full text-sm font-semibold ${
@@ -109,23 +105,8 @@ export default function MyBookings() {
                         : "bg-red-500/20 text-red-300"
                     }`}
                   >
-                    {booking.status === "pending" && bookingTimeLeft > 0 && (
-                      <Clock size={16} className="inline mr-2" />
-                    )}
                     {booking.status}
                   </div>
-
-                  {booking.status === "pending" && bookingTimeLeft > 0 && (
-                    <div
-                      className={`px-4 py-2 rounded-xl font-mono font-bold ${
-                        bookingTimeLeft < 1800
-                          ? "bg-red-500/30 text-red-300 animate-pulse"
-                          : "bg-red-500/20 text-red-300"
-                      }`}
-                    >
-                      {formatTime(bookingTimeLeft)}
-                    </div>
-                  )}
                 </div>
 
                 {/* DATES */}
@@ -156,17 +137,21 @@ export default function MyBookings() {
                   </div>
                 </div>
 
-                {/* ACTION STATES */}
-                {booking.status === "pending" && bookingTimeLeft > 0 && (
-                  <div className="bg-yellow-500/20 border border-yellow-500/40 p-4 rounded-xl text-center">
-                    ⏰ Pay within{" "}
-                    <strong>{formatTime(bookingTimeLeft)}</strong>
-                  </div>
-                )}
-
-                {booking.status === "pending" && bookingTimeLeft === 0 && (
-                  <div className="bg-orange-500/20 border border-orange-500/40 p-4 rounded-xl text-center">
-                    ⏰ Time Expired – Waiting for admin
+                {/* STATUS MESSAGE + ACTION */}
+                {booking.status === "pending" && (
+                  <div className="space-y-4">
+                    <div className="bg-yellow-500/20 border border-yellow-500/40 p-4 rounded-xl text-center">
+                      ⏰ Waiting for confirmation
+                    </div>
+                    <button
+                      onClick={() => openCancelDialog(booking._id)}
+                      disabled={cancellingId === booking._id}
+                      className="w-full bg-red-600 hover:bg-red-700 disabled:bg-red-800 disabled:cursor-not-allowed text-white font-semibold py-2 rounded-xl transition"
+                    >
+                      {cancellingId === booking._id
+                        ? "Cancelling..."
+                        : "Cancel Booking"}
+                    </button>
                   </div>
                 )}
 
@@ -182,175 +167,49 @@ export default function MyBookings() {
                   </div>
                 )}
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* ✅ CUSTOM CONFIRMATION MODAL */}
+      {cancelDialog.open && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-b from-white/10 to-black/20 backdrop-blur-xl border border-white/20 rounded-2xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white">
+                Cancel Booking?
+              </h2>
+              <button
+                onClick={closeCancelDialog}
+                className="p-2 hover:bg-white/10 rounded-xl transition"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <p className="text-gray-300 mb-8 text-lg leading-relaxed">
+              Are you sure you want to cancel this booking? This action cannot
+              be undone.
+            </p>
+
+            <div className="flex gap-4 pt-4">
+              <button
+                onClick={closeCancelDialog}
+                className="flex-1 bg-white/10 hover:bg-white/20 text-white font-semibold py-3 px-6 rounded-xl border border-white/20 transition"
+              >
+                Keep Booking
+              </button>
+              <button
+                onClick={confirmCancel}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-xl transition"
+              >
+                Cancel Booking
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
-
-
-// import React, { useEffect } from "react";
-// import { useNavigate } from "react-router-dom";
-// import { useBookingStore } from "../store/useBookingStore";
-// import toast from "react-hot-toast";
-
-// export default function BookedDetail() {
-//   const navigate = useNavigate();
-
-//   const {
-//     bookings,
-//     loading,
-//     error,
-//     fetchBookings,
-//     cancelBooking,
-//   } = useBookingStore();
-
-//   // Load all bookings when page opens
-//   useEffect(() => {
-//     fetchBookings();
-//   }, [fetchBookings]);
-
-//   // Handle cancel
-//   const handleCancel = async (id) => {
-//     try {
-//       await cancelBooking(id);
-//       toast.success("Booking cancelled");
-//       fetchBookings(); // refresh list after deletion
-//     } catch (err) {
-//       toast.error(err.message || "Unable to cancel booking");
-//     }
-//   };
-
-//   // UI states
-//   if (loading) {
-//     return (
-//       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-//         Loading bookings...
-//       </div>
-//     );
-//   }
-
-//   if (error) {
-//     return (
-//       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-//         Error: {error}
-//       </div>
-//     );
-//   }
-
-//   if (!bookings || bookings.length === 0) {
-//     return (
-//       <div data-scroll-section className="md:min-h-screen h-[70vh] bg-black text-white flex items-center justify-center">
-//         No bookings found.
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div
-//       data-scroll-section
-//       className="md:min-h-screen h-[70vh] bg-black text-white pt-32 px-6 md:px-16"
-//     >
-//       <h1 className="text-3xl md:text-4xl font-bold mb-6">
-//         All Booked Details
-//       </h1>
-
-//       <div className="space-y-8 max-w-3xl">
-//         {bookings.map((b) => (
-//           <div key={b._id} className="bg-white/10 p-6 rounded-xl space-y-3">
-//             <p>
-//               <strong>Name:</strong> {b.fullName}
-//             </p>
-//             <p>
-//               <strong>Email:</strong> {b.email}
-//             </p>
-//             <p>
-//               <strong>Phone:</strong> {b.phone}
-//             </p>
-//             <p>
-//               <strong>Address:</strong> {b.address}
-//             </p>
-//             <p>
-//               <strong>Check-in:</strong> {b.checkIn}
-//             </p>
-//             <p>
-//               <strong>Check-out:</strong> {b.checkOut}
-//             </p>
-//             <p>
-//               <strong>Total Days:</strong> {b.days}
-//             </p>
-//             <p>
-//               <strong>Villa:</strong> {b.villaId}
-//             </p>
-
-//             <button
-//               onClick={() => handleCancel(b._id)}
-//               className="bg-red-600 hover:bg-red-700 px-5 py-3 rounded-md font-semibold text-white w-full"
-//             >
-//               Cancel Booking
-//             </button>
-//           </div>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// }
-
-
-// // import React from "react";
-// // import { useNavigate } from "react-router-dom";
-// // import { useBookingStore } from "../store/useBookingStore";
-// // import toast from "react-hot-toast";
-
-// // export default function BookedDetail() {
-// //   const navigate = useNavigate();
-// //   const { bookings, cancelBooking } = useBookingStore();
-
-// //   // If no bookings exist
-// //   if (!bookings || bookings.length === 0) {
-// //     return (
-// //       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-// //         No bookings found.
-// //       </div>
-// //     );
-// //   }
-
-// //   const handleCancel = (id) => {
-// //     cancelBooking(id);
-// //     toast.success("Booking cancelled");
-// //   };
-
-// //   return (
-// //     <div data-scroll-section className="min-h-screen bg-black text-white pt-32 px-6 md:px-16">
-// //       <h1 className="text-3xl md:text-4xl font-bold mb-6">All Booked Details</h1>
-
-// //       <div className="space-y-8 max-w-3xl">
-// //         {bookings.map((b) => (
-// //           <div key={b._id} className="bg-white/10 p-6 rounded-xl space-y-3">
-
-// //             <p><strong>Name:</strong> {b.fullName}</p>
-// //             <p><strong>Email:</strong> {b.email}</p>
-// //             <p><strong>Phone:</strong> {b.phone}</p>
-// //             <p><strong>Address:</strong> {b.address}</p>
-// //             <p><strong>Check-in:</strong> {b.checkIn}</p>
-// //             <p><strong>Check-out:</strong> {b.checkOut}</p>
-// //             <p><strong>Total Days:</strong> {b.days}</p>
-// //             <p><strong>Villa:</strong> {b.villaId}</p>
-
-// //             <button
-// //               onClick={() => handleCancel(b._id)}
-// //               className="bg-red-600 hover:bg-red-700 px-5 py-3 rounded-md font-semibold text-white w-full"
-// //             >
-// //               Cancel Booking
-// //             </button>
-
-// //           </div>
-// //         ))}
-// //       </div>
-// //     </div>
-// //   );
-// // }
-
-

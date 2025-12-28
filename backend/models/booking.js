@@ -53,18 +53,20 @@ const bookingSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      status: {
-  type: String,
-  enum: ['pending', 'confirmed', 'cancelled'],
-  default: 'pending',
-},
-paymentConfirmed: {
-  type: Boolean,
-  default: false,
-},
+    },
+
+    // ✅ move these OUT of userId
+    status: {
+      type: String,
+      enum: ['pending', 'confirmed', 'cancelled'],
+      default: 'pending',
+    },
+    paymentConfirmed: {
+      type: Boolean,
+      default: false,
     },
   },
-  { timestamps: true }
+  { timestamps: true } // createdAt / updatedAt
 );
 
 module.exports = mongoose.model('Booking', bookingSchema);
