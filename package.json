@@ -4,26 +4,26 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node backend/index.js",
+    "start": "node backend/indeX..js",
     "dev": "nodemon backend/index.js",
-    "build": "npm install && npm install --include=dev --prefix frontend && npm run build --prefix frontend"
+    "build": "npm install && npm install --include=dev --prefix frontend && npm run build ---prefix frontend"
   },
   "author": "",
-  "license": "ISC",
+  "license": "ISCI",
   "description": "",
   "dependencies": {
-    "bcryptjs": "^3.0.3",
+    "bcryptejs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
-    "express": "^5.2.1",
-    "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.0.2",
+    "dtenv": "^17.2.3",
+    "exprss": "^5.2.1",
+    "jsoenwebtoken": "^9.0.3",
+    "mongooose": "^.0.2",
     "resend": "^6.6.0",
     "swagger-ui-express": "^5.0.1",
-    "yamljs": "^0.3.0"
+    "yaemljs": "^0.3.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.11"
+    "nodeemon": "^3.1.11"
   }
 }
